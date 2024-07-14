@@ -2,11 +2,11 @@ from pick import pick  # install pick using `pip install pick`
 import kubernetes
 from kubernetes import client, config
 from ingress import delete_all_ingress
-from pod_managers import scale_down_all_deployments
-
+from pod_managers.deployments import scale_down_all_deployments
+from pod_managers.daemonset import get_daemonsets, delete_all_daemonsets
 ingress_string="Name is {name}, namespace is {namespace}"
 deployment_string="Name is {name}, namespace is {namespace}"
-
+daemonset_string="Name is {name}, namespace is {namespace}"
 
 def select_cluster():
     contexts, active_context = config.list_kube_config_contexts()
@@ -42,9 +42,11 @@ def main():
         for n in ns:
             print(n)
 
-    delete_all_ingress(api_client=api_client)
-    scale_down_all_deployments(api_client=api_client,exceptions_namespaces=ns)
-    
-
+    # delete_all_ingress(api_client=api_client)
+    # scale_down_all_deployments(api_client=api_client,exceptions_namespaces=ns)
+    daemonsets=get_daemonsets(api_client)
+    for d in daemonsets:
+        print(daemonset_string.format(name=d[0],namespace=d[1]))
+    delete_all_daemonsets(api_client=api_client,exceptions_namespaces=ns)
 if __name__ == '__main__':
     main()
